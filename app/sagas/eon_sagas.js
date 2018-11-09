@@ -112,6 +112,39 @@ function* retrieveScreenshot() {
   });
 }
 
+function* retrieveVideos() {
+  const { eonList } = yield select();
+  const { selectedEon, eons } = eonList;
+  const eon = eons[selectedEon];
+  const pk = yield call(getPrivateKey);
+  let videosDir = path.join(require('os').homedir(), 'Desktop', 'eon_videos');
+  mkdirp.sync(videosDir);
+  const eonDir = '/data/videos/';
+
+  let Client = require('ssh2-sftp-client');
+  let sftp = new Client();
+  sftp.connect({
+      host: eon.ip,
+      port: '8022',
+      username: 'root',
+      privateKey: pk
+  }).then(() => {
+    return sftp.list(eonDir);
+	}).then((data) => {
+		for( var i = 0, len = data.length; i < len; i++) {
+		  var file = data[i].name;
+		  sftp.fastGet(eonDir+file, path.join(videosDir,file)).then((data) => {
+			  notify('Videos copied!','Workbench has copied the eon videos to:\n' + videoDir);
+		  }).catch((err) => {
+			  console.log(err, 'catch error');
+		  });
+		}
+	
+  }).catch((err) => {
+      console.log(err, 'catch error');
+  });
+}
+
 function* handleRunCommand(action) {
   const { eonDetail } = yield select();
   const { lastRunCommand } = eonDetail;
@@ -121,6 +154,9 @@ function* handleRunCommand(action) {
   } else if (lastRunCommand === 'TakeScreenshot') {
     yield delay(1000);
     yield call(retrieveScreenshot);
+  } else if (lastRunCommand === 'CopyVideos') {
+	yield delay(1000);
+	yield call(retrieveVideos);  
   }
 }
 
