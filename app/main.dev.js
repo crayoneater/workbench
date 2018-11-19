@@ -64,7 +64,6 @@ if (process.platform === 'win32') {
   }
 }
 
-
 /**
  * App Switches
  */
@@ -106,7 +105,7 @@ let mainWindow;
 
 
 app.on('ready', async () => {
-  if (!electronSettings.get("config.windowBounds")) {
+  if (!electronSettings.get("windowBounds")) {
     electronSettings.set("windowBounds", { width: 800, height: 800 })
   }
   let { width, height } = electronSettings.get('windowBounds');
@@ -157,7 +156,7 @@ app.on('ready', async () => {
     writeLog("Resized window",{ width, height });
     // Now that we have them, save them using the `set` method.
     new Promise((resolve) => {
-      electronSettings.set('config.windowBounds', { width, height });
+      electronSettings.set('windowBounds', { width, height });
     });
   }, 1000));
 
